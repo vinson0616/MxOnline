@@ -20,14 +20,17 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 import xadmin
 
-from users.views import LoginView, RegisterView, ActivateUserView
+from users.views import LoginView, RegisterView, ActivateUserView, ForgetPwdView, ResetView, ModifyPwdView
 
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
     url('^$', TemplateView.as_view(template_name='index.html'), name='index'),
     # url('^login/$', TemplateView.as_view(template_name='login.html'),name='login')
-    url('^login/$',LoginView.as_view(), name='login'),
-    url('^register$', RegisterView.as_view(), name='register'),
+    url(r'^login/$',LoginView.as_view(), name='login'),
+    url(r'^register$', RegisterView.as_view(), name='register'),
     url(r'^captcha/', include('captcha.urls')),
-    url(r'^activate/(?P<active_code>.*)/$',ActivateUserView.as_view(), name='user_active')   #提取变量的方式
+    url(r'^activate/(?P<active_code>.*)/$', ActivateUserView.as_view(), name='user_active'),   #提取变量的方式
+    url(r'^forget/$',ForgetPwdView.as_view(), name='forget_pwd'),
+    url(r'^reset/(?P<active_code>.*)/$', ResetView.as_view(), name='reset_pwd'),
+    url(r'^modify_pwd/$', ModifyPwdView.as_view(), name='modify_pwd')
 ]
