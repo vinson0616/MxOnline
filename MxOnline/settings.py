@@ -30,6 +30,10 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# 重载AUTH的方法
+AUTHENTICATION_BACKENDS = (
+    'users.views.CustomBackend',
+)
 
 # Application definition
 
@@ -45,7 +49,8 @@ INSTALLED_APPS = [
     'organization',
     'operation',
     'xadmin',
-    'crispy_forms'
+    'crispy_forms',
+    'captcha'
 ]
 
 # 重载方法 app user + 名称
@@ -136,3 +141,10 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS =[os.path.join(BASE_DIR,"static")]
+
+EMAIL_HOST = "smtp.sina.com"
+EMAIL_PORT = 25
+EMAIL_HOST_USER = "vinson0616@sina.com"
+EMAIL_HOST_PASSWORD = "chenjia520"
+EMAIL_USE_TLS = False
+EMAIL_FROM = "vinson0616@sina.com"

@@ -1,0 +1,4 @@
+专门用于验证码使用的第三方插件
+pip install  django-simple-captcha==0.4.6
+
+以下是安装方法：http://django-simple-captcha.readthedocs.io/en/latest/usage.html#installation
