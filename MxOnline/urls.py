@@ -18,9 +18,13 @@ Including another URLconf
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.generic import TemplateView
+from django.views.static import serve
 import xadmin
 
+from MxOnline.settings import MEDIA_ROOT
+
 from users.views import LoginView, RegisterView, ActivateUserView, ForgetPwdView, ResetView, ModifyPwdView
+from organization.views import OrgView
 
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
@@ -32,5 +36,13 @@ urlpatterns = [
     url(r'^activate/(?P<active_code>.*)/$', ActivateUserView.as_view(), name='user_active'),   #提取变量的方式
     url(r'^forget/$',ForgetPwdView.as_view(), name='forget_pwd'),
     url(r'^reset/(?P<active_code>.*)/$', ResetView.as_view(), name='reset_pwd'),
-    url(r'^modify_pwd/$', ModifyPwdView.as_view(), name='modify_pwd')
+    url(r'^modify_pwd/$', ModifyPwdView.as_view(), name='modify_pwd'),
+
+    # 课程机构URL配置
+    url(r'^org/', include('organization.urls', namespace="org")),
+
+    # 配置上传文件的访问处理函数
+    url(r'^media/(?P<path>.*)$',serve, {"document_root": MEDIA_ROOT})
+
+
 ]

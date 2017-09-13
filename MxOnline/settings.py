@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'operation',
     'xadmin',
     'crispy_forms',
-    'captcha'
+    'captcha',
+    'pure_pagination'
 ]
 
 # 重载方法 app user + 名称
@@ -80,6 +81,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'django.core.context_processors.media',  # 这个专门处理media内容的
             ],
         },
     },
@@ -148,3 +150,8 @@ EMAIL_HOST_USER = "vinson0616@sina.com"
 EMAIL_HOST_PASSWORD = "chenjia520"
 EMAIL_USE_TLS = False
 EMAIL_FROM = "vinson0616@sina.com"
+
+# 上传文件,设置其根目录
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
