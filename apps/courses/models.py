@@ -17,6 +17,8 @@ class Course(models.Model):
     fav_nums = models.IntegerField(default=0,verbose_name=u"收藏人数")
     image = models.ImageField(upload_to="course/%Y%m",verbose_name=u"封面图",max_length=100)
     click_nums = models.IntegerField(default=0,verbose_name=u"点击数")
+    category = models.CharField(default=u'后端开发',max_length=20, verbose_name=u"课程类别")
+    tag = models.CharField(default='', verbose_name=u"课程标签", max_length=10)
     add_time = models.DateTimeField(default=datetime.now,verbose_name=u"添加时间")
 
     class Meta:
@@ -26,6 +28,14 @@ class Course(models.Model):
     # 在章节显示CourseObject，则需要重载此方法
     def __unicode__(self):
         return self.name
+
+    # 获取课程章节数,用于界面调用
+    def get_zj_nums(self):
+        return self.lesson_set.all().count()
+
+    # 获取学习课程数
+    def get_learn_users(self):
+        return self.usercourse_set.all()[:5]
 
 
 class Lesson(models.Model):
