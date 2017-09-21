@@ -6,8 +6,9 @@ from django.views.generic.base import View
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponse
 
-from .models import Course, CourseResource
-from operation.models import UserFavorite, CourseComments
+from .models import Course, CourseResource,Video
+from operation.models import UserFavorite, CourseComments, UserCourse
+from utils.mixin_utils import LoginRequiredMixin  # Mixin结尾的都是基础函数
 
 
 # 课程列表首页
@@ -72,26 +73,52 @@ class CourseDetailView(View):
 
 
 # 课程章节信息
-class CourseInfoView(View):
+class CourseInfoView(LoginRequiredMixin, View):
     def get(self,request, course_id):
         course = Course.objects.get(id = int(course_id))
+
+        # 查询用户是否已经关联了该课程
+        user_query_courses = UserCourse.objects.filter(user=request.user, course=course)
+        if not user_query_courses:
+            user_query_course = UserCourse(user=request.user, course=course)
+            user_query_course.save()
+
+        # 该课的学生还学过的所有课程
+        user_courses = UserCourse.objects.filter(course=course)
+        user_ids = [user_course.user.id for user_course in user_courses]
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        course_ids = [user_course.id for user_course in user_courses]
+        # 获取学过该用户学过其他的所有课程
+        relate_courses = Course.objects.filter(id__in=course_ids).order_by("-click_nums")[:5]
+
         all_resources = CourseResource.objects.filter(course=course)
         return  render(request, 'course-video.html',{
             "course": course,
-            "all_resources": all_resources
+            "all_resources": all_resources,
+            "relate_courses": relate_courses
         })
 
 
-# 课程评论
-class CommentsView(View):
+# 课程评论   继承了Login，如果用户未登录，则必须得先登录
+class CommentsView(LoginRequiredMixin, View):
     def get(self, request, course_id):
         course = Course.objects.get(id=int(course_id))
+
+        # 该课的学生还学过的所有课程
+        user_courses = UserCourse.objects.filter(course=course)
+        user_ids = [user_course.user.id for user_course in user_courses]
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        course_ids = [user_course.id for user_course in user_courses]
+        # 获取学过该用户学过其他的所有课程
+        relate_courses = Course.objects.filter(id__in=course_ids).order_by("-click_nums")[:5]
+
         all_resources = CourseResource.objects.filter(course=course)
         all_comments = CourseComments.objects.all()
         return  render(request,'course-comment.html',{
             "course": course,
             "all_resources": all_resources,
-            "all_comments": all_comments
+            "all_comments": all_comments,
+            "relate_courses": relate_courses
         })
 
 
@@ -115,3 +142,30 @@ class AddCommentsView(View):
         else:
             return HttpResponse(json.dumps({'status': 'fail', 'msg': '添加失败'}), content_type='application/json')
 
+
+# 视频播放页面
+class VideoPlayView(View):
+    def get(self, request, video_id):
+        video = Video.objects.get(id=int(video_id))
+        course = video.lesson.course
+        # 查询用户是否已经关联了该课程
+        user_query_courses = UserCourse.objects.filter(user=request.user, course=course)
+        if not user_query_courses:
+            user_query_course = UserCourse(user=request.user, course=course)
+            user_query_course.save()
+
+        # 该课的学生还学过的所有课程
+        user_courses = UserCourse.objects.filter(course=course)
+        user_ids = [user_course.user.id for user_course in user_courses]
+        all_user_courses = UserCourse.objects.filter(user_id__in=user_ids)
+        course_ids = [user_course.id for user_course in user_courses]
+        # 获取学过该用户学过其他的所有课程
+        relate_courses = Course.objects.filter(id__in=course_ids).order_by("-click_nums")[:5]
+
+        all_resources = CourseResource.objects.filter(course=course)
+        return render(request, 'course-play.html', {
+            "course": course,
+            "all_resources": all_resources,
+            "relate_courses": relate_courses,
+            "video": video
+        })
