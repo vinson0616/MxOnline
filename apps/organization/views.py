@@ -7,7 +7,7 @@ from django.views.generic import  View
 from django.http import HttpResponse
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
-from .models import CourseOrg, CityDict
+from .models import CourseOrg, CityDict,Teacher
 from .forms import UserAskForm
 from courses.models import Course
 from operation.models import UserFavorite
@@ -173,3 +173,36 @@ class AddFavView(View):
                 return HttpResponse(json.dumps({'status': 'success', 'msg': '已收藏'}), content_type='application/json')
             else:
                 return HttpResponse(json.dumps({'status': 'fail', 'msg': '收藏错误'}), content_type='application/json')
+
+
+# 课程讲师列表页
+class TeacherListView(View):
+    def get(self,request):
+        all_teachers = Teacher.objects.all()
+
+        # 根据Sort排序包括 人气
+        sort = request.GET.get("sort", "")
+        if sort:
+            if sort == "":
+                all_teachers = all_teachers.order_by("-click_nums")
+
+        # 获取排行榜讲师
+        sorted_teacher = all_teachers.order_by("-click_nums")[:3]
+
+        teacher_nums = all_teachers.count()
+
+        # 对课程讲师进行分页
+        try:
+            page = request.GET.get('page', 1)
+        except PageNotAnInteger:
+            page = 1
+        p = Paginator(all_teachers, 1, request=request)
+
+        teachers = p.page(page)
+
+        return  render(request,'teachers-list.html',{
+            "all_teachers": teachers,
+            "sorted_teacher": sorted_teacher,
+            "sort": sort,
+            "teacher_nums": teacher_nums
+        })
