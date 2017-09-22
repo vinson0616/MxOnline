@@ -6,8 +6,11 @@ from django.shortcuts import render
 from django.views.generic import  View
 from django.http import HttpResponse
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
+from utils.mixin_utils import login_required
+from django.db.models import Q
 
 from .models import CourseOrg, CityDict,Teacher
+from courses.models import Course
 from .forms import UserAskForm
 from courses.models import Course
 from operation.models import UserFavorite
@@ -22,6 +25,12 @@ class OrgView(View):
         hot_orgs = all_orgs.order_by("-click_nums")[:3]
         # 城市
         all_citys = CityDict.objects.all()
+
+        # 搜索机构
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            all_orgs = all_orgs.filter(
+                Q(name__icontains=search_keywords) | Q(desc__icontains=search_keywords))
 
         # 取出筛选城市
         city_id = request.GET.get('city', '')
@@ -180,6 +189,14 @@ class TeacherListView(View):
     def get(self,request):
         all_teachers = Teacher.objects.all()
 
+        # 搜索讲师
+        search_keywords = request.GET.get('keywords', '')
+        if search_keywords:
+            all_teachers = all_teachers.filter(
+                Q(name__icontains=search_keywords) |
+                Q(work_company__icontains=search_keywords)|
+                Q(work_position__icontains=search_keywords))
+
         # 根据Sort排序包括 人气
         sort = request.GET.get("sort", "")
         if sort:
@@ -199,10 +216,62 @@ class TeacherListView(View):
         p = Paginator(all_teachers, 1, request=request)
 
         teachers = p.page(page)
-
         return  render(request,'teachers-list.html',{
             "all_teachers": teachers,
             "sorted_teacher": sorted_teacher,
             "sort": sort,
-            "teacher_nums": teacher_nums
+            "teacher_nums": teacher_nums,
         })
+
+
+# 讲师详情页
+class TeacherDetailView(View):
+    def get(self, request, teacher_id):
+        teacher = Teacher.objects.get(id = int(teacher_id))
+        all_courses =Course.objects.filter(teacher=teacher)
+
+        has_teacher_fav = False
+        if UserFavorite.objects.filter(user=request.user,fav_type=3, fav_id=teacher.id):
+            has_teacher_fav = True
+
+        has_org_fav = False
+        if UserFavorite.objects.filter(user=request.user,fav_type=2, fav_id=teacher.org.id):
+            has_org_fav = True
+
+        # 获取排行榜讲师
+        sorted_teacher = Teacher.objects.all().order_by("-click_nums")[:3]
+        return render(request, "teacher-detail.html",{
+            "teacher": teacher,
+            "all_courses": all_courses,
+            "sorted_teacher": sorted_teacher,
+            "has_teacher_fav": has_teacher_fav,
+            "has_org_fav": has_org_fav
+        })
+
+
+# 讲师的收藏
+class TeacherFavView(View):
+    def post(self,request):
+        fav_id = request.POST.get('fav_id', 0)
+        fav_type = request.POST.get('fav_type', 0)
+
+        # 判断用户是否已经登录了
+        if not request.user.is_authenticated():
+            return HttpResponse(json.dumps({'status': 'fail', 'msg': '用户未登录'}), content_type='application/json')
+        # 查询是否已经被删除了
+        exist_records = UserFavorite.objects.filter(user=request.user, fav_id=int(fav_id), fav_type=int(fav_type))
+        if exist_records:
+            # 如果记录已经存在了，则表示用户取消收藏
+            exist_records.delete()
+            return HttpResponse(json.dumps({'status': 'fail', 'msg': '收藏'}), content_type='application/json')
+        else:
+            user_fav = UserFavorite()
+            if int(fav_id) > 0 and int(fav_type) > 0:
+                user_fav.user = request.user
+                user_fav.fav_id = int(fav_id)
+                user_fav.fav_type = int(fav_type)
+                user_fav.save()
+                return HttpResponse(json.dumps({'status': 'success', 'msg': '已收藏'}), content_type='application/json')
+            else:
+                return HttpResponse(json.dumps({'status': 'fail', 'msg': '收藏错误'}), content_type='application/json')
+

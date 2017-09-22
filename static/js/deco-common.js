@@ -59,19 +59,19 @@ function getCookie(name) {
  };
 
 //顶部搜索栏搜索方法
-function search_click(){
+function search_click() {
     var type = $('#jsSelectOption').attr('data-value'),
         keywords = $('#search_keywords').val(),
         request_url = '';
-    if(keywords == ""){
+    if (keywords == "") {
         return
     }
-    if(type == "course"){
-        request_url = "/course/list?keywords="+keywords
-    }else if(type == "teacher"){
-        request_url = "/org/teacher/list?keywords="+keywords
-    }else if(type == "org"){
-        request_url = "/org/list?keywords="+keywords
+    if (type == "course") {
+        request_url = "/course/list?keywords=" + keywords
+    } else if (type == "teacher") {
+        request_url = "/org/teacher/list?keywords=" + keywords
+    } else if (type == "org") {
+        request_url = "/org/list?keywords=" + keywords
     }
     window.location.href = request_url
 }
