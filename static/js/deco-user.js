@@ -81,6 +81,7 @@ $(function(){
         Dml.fun.showDialog('#jsResetDialog', '#jsResetPwdTips');
     });
 
+    //个人中心修改密码
     $('#jsResetPwdBtn').click(function(){
         $.ajax({
             cache: false,

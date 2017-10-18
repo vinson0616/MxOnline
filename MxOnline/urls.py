@@ -23,7 +23,7 @@ import xadmin
 
 from MxOnline.settings import MEDIA_ROOT
 
-from users.views import LoginView, RegisterView, ActivateUserView, ForgetPwdView, ResetView, ModifyPwdView
+from users.views import LoginView, RegisterView, ActivateUserView, ForgetPwdView, ResetView, ModifyPwdView,LogoutView
 from organization.views import OrgView
 
 urlpatterns = [
@@ -31,9 +31,10 @@ urlpatterns = [
     url('^$', TemplateView.as_view(template_name='index.html'), name='index'),
     # url('^login/$', TemplateView.as_view(template_name='login.html'),name='login')
     url(r'^login/$',LoginView.as_view(), name='login'),
+    url(r'^logout/$', LogoutView.as_view(), name='logout'),
     url(r'^register$', RegisterView.as_view(), name='register'),
     url(r'^captcha/', include('captcha.urls')),
-    url(r'^activate/(?P<active_code>.*)/$', ActivateUserView.as_view(), name='user_active'),   #提取变量的方式
+    url(r'^activate/(?P<active_code>.*)/$', ActivateUserView.as_view(), name='user_active'),   # 提取变量的方式
     url(r'^forget/$',ForgetPwdView.as_view(), name='forget_pwd'),
     url(r'^reset/(?P<active_code>.*)/$', ResetView.as_view(), name='reset_pwd'),
     url(r'^modify_pwd/$', ModifyPwdView.as_view(), name='modify_pwd'),
@@ -43,6 +44,9 @@ urlpatterns = [
 
     # 课程相关URL配置
     url(r'^course/', include('courses.urls',namespace="course")),
+
+    # 用户相关URL配置
+    url(r'^users/', include('users.urls', namespace="users")),
 
     # 配置上传文件的访问处理函数
     url(r'^media/(?P<path>.*)$',serve, {"document_root": MEDIA_ROOT})

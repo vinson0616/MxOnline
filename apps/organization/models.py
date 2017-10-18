@@ -63,3 +63,7 @@ class Teacher(models.Model):
     def __unicode__(self):
         return self.name
 
+    # 获取讲师的课程数
+    def get_course_nums(self):
+        return self.course_set.all().count()
+
