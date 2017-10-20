@@ -22,7 +22,7 @@ class CourseListView(View):
         # 搜索公开课
         search_keywords = request.GET.get('keywords','')
         if search_keywords:
-            all_courses = all_courses.filter(Q(name__icontains=search_keywords) | Q(desc__icontains=search_keywords) | Q(detail__icontains=search_keywords))
+            all_courses = all_courses.filter(Q(name__icontains=search_keywords) | Q(desc__icontains=search_keywords) | Q(detail__icontains=search_keywords))  # 有关于i的是不区分大小写的
 
         # 课程排序： 根据Sort排序包括 最热门 和 参与人数
         sort = request.GET.get("sort", "")
@@ -82,6 +82,10 @@ class CourseDetailView(View):
 class CourseInfoView(LoginRequiredMixin, View):
     def get(self,request, course_id):
         course = Course.objects.get(id = int(course_id))
+
+        # 学习人数+1
+        course.students +=1
+        course.save()
 
         # 查询用户是否已经关联了该课程
         user_query_courses = UserCourse.objects.filter(user=request.user, course=course)

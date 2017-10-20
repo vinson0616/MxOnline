@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.views.generic.base import View
 from django.contrib.auth.hashers import make_password
 from django.http import HttpResponse, HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
 from pure_pagination import Paginator, EmptyPage, PageNotAnInteger
 
@@ -18,6 +19,7 @@ from .forms import LoginForm, RegisterForm, ForgetForm, ModifyPwdForm, UploadIma
 from utils.email_send import send_register_email
 from utils.mixin_utils import LoginRequiredMixin
 from organization.models import CourseOrg, Teacher
+from .models import Banner
 
 
 # 需要在Setting.py加上配置，这个是自定义的auth方法
@@ -47,7 +49,8 @@ class LoginView(View):
             if user is not None:
                 if user.is_active:
                     login(request, user)
-                    return render(request, "index.html")
+                    # 重定向到首页
+                    return HttpResponseRedirect(reverse("index"))
                 else:
                     return render(request, "login.html", {"msg": "该用户未激活!"})
             else:
@@ -61,7 +64,6 @@ class LogoutView(View):
     def get(self, request):
         logout(request)
         # 重定向到首页
-        from django.core.urlresolvers import reverse
         return HttpResponseRedirect(reverse("index"))
 
 
@@ -292,6 +294,12 @@ class MyMessageView(LoginRequiredMixin,View):
     def get(self,request):
         all_message = UserMessage.objects.filter(user=request.user.id)
 
+        # 用户进入个人消息后清空未记录的消息
+        all_unread_message = UserMessage.objects.filter(user=request.user.id, has_read=False)
+        for unread_message in all_unread_message:
+            unread_message.has_read = True
+            unread_message.save()
+
         # 对消息进行分页
         try:
             page = request.GET.get('page', 1)
@@ -303,3 +311,35 @@ class MyMessageView(LoginRequiredMixin,View):
         return render(request,'usercenter-message.html',{
             "messages":messages
         })
+
+
+# 慕学在线网首页
+class IndexView(View):
+    def get(self,request):
+        # 取出轮播图
+        all_Banners = Banner.objects.all().order_by('index')
+        courses = Course.objects.filter(is_banner=False)[:6]
+        banner_courses = Course.objects.filter(is_banner=True)[:3]
+        course_orgs = CourseOrg.objects.all()[:15]
+        return render(request,'index.html', {
+            'all_Banners': all_Banners,
+            'courses':courses,
+            'banner_courses':banner_courses,
+            'course_orgs':course_orgs
+        })
+
+
+# 全局404处理函数
+def page_not_found(request):
+    from django.shortcuts import render_to_response
+    response = render_to_response('404.html',{})
+    response.status_code = 404
+    return  response
+
+
+# 全局500处理函数
+def page_error(request):
+    from django.shortcuts import render_to_response
+    response = render_to_response('500.html', {})
+    response.status_code = 500
+    return response
