@@ -16,6 +16,7 @@ class CourseOrgAdmin(object):
     list_display = ['name', 'desc', 'click_nums', 'fav_nums']
     search_fields =['name', 'desc', 'click_nums', 'fav_nums']
     list_filter = ['name', 'desc', 'click_nums', 'fav_nums']
+    relfield_style = 'fk-ajax'  # 将外键设置成搜索框，而不是下拉框
 
 
 class TeacherAdmin(object):

@@ -2,7 +2,7 @@
 from datetime import datetime
 
 from django.db import models
-
+from DjangoUeditor.models import UEditorField
 from organization.models import CourseOrg,Teacher
 
 
@@ -10,7 +10,7 @@ class Course(models.Model):
     course_org = models.ForeignKey(CourseOrg, verbose_name=u"课程机构", null=True,blank=True)
     name = models.CharField(max_length=50, verbose_name=u"课程名")
     desc = models.CharField(max_length=500, verbose_name=u"课程描述")
-    detail = models.TextField(verbose_name=u"课程详情")
+    detail = UEditorField(verbose_name= u'课程详情	',width=600, height=300,  imagePath="courses/ueditor/", filePath="courses/ueditor/",default="")
     is_banner = models.BooleanField(default=False, verbose_name=u"是否轮播")
     teacher = models.ForeignKey(Teacher, verbose_name=u"讲师", null=True, blank=True)
     degree = models.CharField(choices=(("cj","初级"),("zj","中级"),("gj","高级")),max_length=2, verbose_name=u"难度")
@@ -36,6 +36,13 @@ class Course(models.Model):
     # 获取课程章节数,用于界面调用
     def get_zj_nums(self):
         return self.lesson_set.all().count()
+    get_zj_nums.short_description = "章节数"
+
+    # 跳转函数
+    def go_to(self):
+        from django.utils.safestring import mark_safe
+        return mark_safe("<a href='http://www.baidu.com'>跳转</a>")
+    go_to.short_description ="跳转"
 
     # 获取学习课程数
     def get_learn_users(self):
@@ -45,6 +52,12 @@ class Course(models.Model):
     def get_course_lession(self):
         return self.lesson_set.all()
 
+
+class BannerCourse(Course):
+    class Meta:
+        verbose_name =u"轮播课程"
+        verbose_name_plural = verbose_name
+        proxy = True  # 一定要设置成True，否则就会再生成一张新张，这样用同一张表
 
 
 class Lesson(models.Model):

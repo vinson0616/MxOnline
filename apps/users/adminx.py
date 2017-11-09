@@ -4,9 +4,12 @@ __date__ = '9/6/2017 04:39 PM'
 
 import xadmin
 from  xadmin import views
+from xadmin.plugins.auth import UserAdmin
 
 from .models import EmailVerifyRecord
 from .models import Banner
+
+
 
 # 这个是全局设置
 class BaseSetting(object):
@@ -24,6 +27,8 @@ class EmailVerifyRecordAdmin(object):
     list_display =['code', 'email', 'send_type', 'send_time']
     search_fields=['code', 'email', 'send_type']  # 查询条件
     list_filter = ['code', 'email', 'send_type', 'send_time']  # 过滤器 - 高级搜索
+    model_icon = 'fa fa-envelope-o'
+
 
 
 class BannerAdmin(object):

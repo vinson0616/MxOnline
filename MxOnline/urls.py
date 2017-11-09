@@ -25,10 +25,11 @@ from MxOnline.settings import MEDIA_ROOT
 
 from users.views import LoginView, RegisterView, ActivateUserView, ForgetPwdView, ResetView, ModifyPwdView,LogoutView
 from organization.views import OrgView
+from users.views import IndexView
 
 urlpatterns = [
     url(r'^xadmin/', xadmin.site.urls),
-    url('^$', TemplateView.as_view(template_name='index.html'), name='index'),
+    url('^$', IndexView.as_view(), name='index'),
     # url('^login/$', TemplateView.as_view(template_name='login.html'),name='login')
     url(r'^login/$',LoginView.as_view(), name='login'),
     url(r'^logout/$', LogoutView.as_view(), name='logout'),
@@ -49,7 +50,15 @@ urlpatterns = [
     url(r'^users/', include('users.urls', namespace="users")),
 
     # 配置上传文件的访问处理函数
-    url(r'^media/(?P<path>.*)$',serve, {"document_root": MEDIA_ROOT})
+    url(r'^media/(?P<path>.*)$',serve, {"document_root": MEDIA_ROOT}),
 
+    #url(r'^static/(?P<path>.*)$',serve, {"document_root": STATIC_ROOT})
+
+    # 富文本相关
+    url(r'^ueditor/',include('DjangoUeditor.urls' ))
 
 ]
+
+# 全局404页面配置
+handler404 = 'users.views.page_not_found'
+handler500 = 'users.views.page_error'

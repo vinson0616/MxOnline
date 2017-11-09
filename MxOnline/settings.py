@@ -28,7 +28,7 @@ SECRET_KEY = 'a%rkhm(k4_)zzr9=0a7qm&#u(vnqd6x)wj8wx%5xkz(!+3$w@9'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # 重载AUTH的方法
 AUTHENTICATION_BACKENDS = (
@@ -51,7 +51,8 @@ INSTALLED_APPS = [
     'xadmin',
     'crispy_forms',
     'captcha',
-    'pure_pagination'
+    'pure_pagination',
+    'DjangoUeditor'
 ]
 
 # 重载方法 app user + 名称
@@ -154,4 +155,6 @@ EMAIL_FROM = "vinson0616@sina.com"
 # 上传文件,设置其根目录
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
